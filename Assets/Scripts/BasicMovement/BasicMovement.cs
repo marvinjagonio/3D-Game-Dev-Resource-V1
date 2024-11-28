@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 public class BasicMovement : MonoBehaviour
 {
     Rigidbody playerRb;
+    [SerializeField] float playerJumpForce;
+    [SerializeField] float playerSpeed;
    
     void Start()
     {
@@ -27,12 +29,17 @@ public class BasicMovement : MonoBehaviour
         Vector3 normalizeDirection = inputDirection.normalized;
 
         // Apply the velocity
-        playerRb.velocity = normalizeDirection * 5;
+        playerRb.velocity = normalizeDirection * playerSpeed;
 
 
 
 
         //Old Code to mode without normalizing
         //playerRb.velocity = inputvalue.Get<Vector3>() * 5;
+    }
+
+    private void OnJump()
+    {
+        playerRb.AddForce(Vector3.up * playerJumpForce, ForceMode.Impulse);
     }
 }
