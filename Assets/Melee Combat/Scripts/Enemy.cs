@@ -22,11 +22,23 @@ public class Enemy : MonoBehaviour
     {
         EnemyRaycastDetection();
 
+        
      
         if(playerAttacked)
         {
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(target.position - transform.position), Time.deltaTime * 20);
-            transform.Translate(Vector3.forward * 2 * Time.deltaTime);
+            Vector3 flatDir = (target.position - transform.position);
+            flatDir.y = 0f; // remove tilt
+
+            // Rotate only on Y axis
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.LookRotation(flatDir),
+                Time.deltaTime * 20f
+            );
+
+            // Move forward horizontally
+            transform.Translate(Vector3.forward * 2f * Time.deltaTime, Space.Self);
+
         }
 
     }
@@ -34,7 +46,7 @@ public class Enemy : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        StartCoroutine(StartChasing());
+       
 
         if (currentHealth <= 0)
         {
@@ -56,18 +68,22 @@ public class Enemy : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hitInfo, rayDistance, layerMask))
         {
             Debug.Log("Detected");
+            playerAttacked = true;
 
             if (hitInfo.distance < 1.5f)
             {
                 Debug.Log("Close to target");
             }
+
+        }
+        else
+        {
+           playerAttacked = false;
         }
 
+       
+
     }
 
-    IEnumerator StartChasing()
-    {
-        yield return new WaitForSeconds(3f);
-        playerAttacked = true;
-    }
+   
 }
