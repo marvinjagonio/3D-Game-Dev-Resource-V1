@@ -1,12 +1,15 @@
+using System;
 using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public class Player : MonoBehaviour
 {
     public InputActionAsset InputActions;
 
     private InputAction p_Move;
+    private InputAction p_Attack;
 
 
     private CharacterController controller;
@@ -18,9 +21,15 @@ public class Player : MonoBehaviour
     [SerializeField] private float gravity = -9.8f;
     [SerializeField] private bool shouldFaceMoveDirection = false;
 
+    public Transform attackPoint;
+    public float attackRange = 0.5f;
+    public LayerMask enemyLayers;
+
+    private Enemy enemy;
     private void Awake()
     {
         p_Move = InputSystem.actions.FindAction("Move");
+        p_Attack = InputSystem.actions.FindAction("Attack");
     }
 
     private void Start()
@@ -39,6 +48,31 @@ public class Player : MonoBehaviour
     }
 
     private void Update()
+    {
+        PlayerMove();
+        PlayerAttackExecution();
+    }
+
+    private void PlayerAttackExecution()
+    {
+        if(p_Attack.WasPerformedThisFrame())
+        {
+            PlayerAttackCollider();
+        }
+    }
+
+    private void PlayerAttackCollider()
+    {
+        Collider[] hitEnemies = Physics.OverlapSphere(attackPoint.position, attackRange, enemyLayers);
+
+        foreach (Collider enemy in hitEnemies)
+        {
+            enemy.GetComponent<Enemy>().TakeDamage(20);
+        }
+
+    }
+
+    private void PlayerMove()
     {
         moveInput = p_Move.ReadValue<Vector2>();
 
@@ -63,4 +97,12 @@ public class Player : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
+
+    void OnDrawGizmosSelected()
+    {
+        if (attackPoint == null)
+            return;
+        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    }
+
 }
